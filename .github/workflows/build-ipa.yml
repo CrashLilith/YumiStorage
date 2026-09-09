@@ -1,0 +1,48 @@
+name: Build YumiStorage IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    # macOS is required for Apple's arm64 iOS toolchain and codesign tools.
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Theos
+        uses: beerpiss/theos-action@v1
+        with:
+          theos-sdks: https://github.com/theos/sdks
+          cache: true
+
+      - name: Restore libidevice FFI library
+        env:
+          LIBIDEVICE_FFI_URL: ${{ secrets.LIBIDEVICE_FFI_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${LIBIDEVICE_FFI_URL:-}" ]; then
+            echo "Missing repository secret LIBIDEVICE_FFI_URL."
+            echo "It must point to a trusted copy of YumiStorage/Tunnel/libidevice_ffi.a."
+            exit 1
+          fi
+          curl --fail --location --retry 3 "$LIBIDEVICE_FFI_URL" \
+            --output YumiStorage/Tunnel/libidevice_ffi.a
+          test "$(stat -f '%z' YumiStorage/Tunnel/libidevice_ffi.a)" -gt 1000000
+
+      - name: Build IPA
+        run: |
+          set -euo pipefail
+          make clean
+          make package TARGET=iphone:clang:latest:18.0
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: YumiStorage-ipa
+          path: packages/*.ipa
+          if-no-files-found: error
