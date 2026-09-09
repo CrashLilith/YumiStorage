@@ -44,6 +44,18 @@ struct BackupMetadata: Codable, Hashable {
             yumiStorageVersion = try values.decode(String.self, forKey: .legacyEscapeOSVersion)
         }
     }
+
+    func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(bundleIdentifier, forKey: .bundleIdentifier)
+        try values.encode(appName, forKey: .appName)
+        try values.encode(containerPath, forKey: .containerPath)
+        try values.encode(createdAt, forKey: .createdAt)
+        try values.encode(fileCount, forKey: .fileCount)
+        try values.encode(totalBytes, forKey: .totalBytes)
+        try values.encode(manifestSHA256, forKey: .manifestSHA256)
+        try values.encode(yumiStorageVersion, forKey: .yumiStorageVersion)
+    }
 }
 
 /// A backup archive on disk with parsed metadata.
