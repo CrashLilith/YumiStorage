@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="docs/brand/icon.png" alt="EscapeOS" width="128" height="128">
+<img src="docs/brand/icon.png" alt="YumiStorage" width="128" height="128">
 
-# EscapeOS
+# YumiStorage
 
 On-device file browser and App Store app-data backup/restore for sideloaded iOS, using a path-scoped container sandbox escape. No jailbreak. No Keychain.
 
-**Sideload the IPA with [iPASide](https://github.com/pwnapplehat/iPASide)** (Windows). iPASide creates the same kind of pairing file as [iLoader](https://iloader.site/docs/) and places `pairingFile.plist` after install. An iLoader file can be imported instead. After that, the PC is not required — EscapeOS talks to this iPhone over LocalDevVPN.
+**Sideload the IPA with [iPASide](https://github.com/pwnapplehat/iPASide)** (Windows). iPASide creates the same kind of pairing file as [iLoader](https://iloader.site/docs/) and places `pairingFile.plist` after install. An iLoader file can be imported instead. After that, the PC is not required — YumiStorage talks to this iPhone over LocalDevVPN.
 
 </div>
 
@@ -15,7 +15,7 @@ On-device file browser and App Store app-data backup/restore for sideloaded iOS,
 - Lists installed user apps through LocalDevVPN + `pairingFile.plist` in Documents. Search by name or bundle ID; A–Z letters on the right jump the list.
 - Browses an app Data container (`Documents`, `Library`, `tmp`) after consuming a `bad_query` sandbox extension for that container UUID.
 - Creates, previews, edits, and shares files in that container (share keeps the original name). Compress makes a zip of files and folders in the current directory. Tap zip, 7z, tar, gz, bz2, xz, lz4, lzma, or deb to extract; encrypted zip and 7z ask for a password. RAR is not unpackable. Select in the top right for multi-select Copy, Cut, Paste, Compress, Duplicate, and Delete. Copy Path / Copy Bundle ID put text on the system clipboard and show a confirmation.
-- Exports a zip + `manifest.json` (SHA-256 per file) into Files → On My iPhone → EscapeOS → Backups, and restores that archive into the same app's current container.
+- Exports a zip + `manifest.json` (SHA-256 per file) into Files → On My iPhone → YumiStorage → Backups, and restores that archive into the same app's current container.
 - **Reclaim** ranks apps by cache/tmp size and can empty Safe buckets (`tmp`, `Library/Caches`, logs, splash snapshots). Session buckets (cookies, WebKit) are opt-in per app. Documents, Preferences, and Application Support are never reclaimed.
 - **Reset App Data** on an app’s detail screen empties that app’s Documents, Library, and tmp. It does not touch Keychain or App Groups.
 
@@ -60,16 +60,16 @@ Also required:
 ## Sideload
 
 1. Install [iPASide](https://github.com/pwnapplehat/iPASide/releases/latest) on Windows.
-2. Sideload `EscapeOS.ipa` from this repo's [Releases](https://github.com/pwnapplehat/EscapeOS/releases).
+2. Sideload `YumiStorage.ipa` from this repo's [Releases](https://github.com/pwnapplehat/YumiStorage/releases).
 3. Trust the developer profile on the iPhone.
 4. iPASide places `pairingFile.plist` automatically after sideload. To do it later: Settings → Pairing file → Place.
-5. Unplug if you want. Install LocalDevVPN, connect it, leave Wi-Fi on, then open EscapeOS.
+5. Unplug if you want. Install LocalDevVPN, connect it, leave Wi-Fi on, then open YumiStorage.
 
 ## Why a pairing file (not House Arrest)
 
-House Arrest is a **PC → phone** lockdown service. iPASide uses it to write `pairingFile.plist` into EscapeOS's Documents (same path as Files sharing). That is how the pairing file *arrives*. It is not a way for EscapeOS, running on the iPhone, to see other apps.
+House Arrest is a **PC → phone** lockdown service. iPASide uses it to write `pairingFile.plist` into YumiStorage's Documents (same path as Files sharing). That is how the pairing file *arrives*. It is not a way for YumiStorage, running on the iPhone, to see other apps.
 
-A sideloaded app cannot enumerate other apps or their Data containers by itself (`LSApplicationWorkspace` and listing `/var/mobile/Containers/…` stay blocked). EscapeOS therefore:
+A sideloaded app cannot enumerate other apps or their Data containers by itself (`LSApplicationWorkspace` and listing `/var/mobile/Containers/…` stay blocked). YumiStorage therefore:
 
 1. Uses the pairing file over LocalDevVPN to talk to `installation_proxy` as a trusted host, which is what fills the app list and each Data-container path.
 2. Opens that container with `bad_query` so Documents, Library, and tmp are all reachable. House Arrest's usual `VendDocuments` is Documents-only, and only for apps that enabled file sharing.
@@ -82,9 +82,9 @@ This tree is built with Theos against the iPhoneOS 16.5 SDK, deployment target *
 
 ```sh
 export THEOS=~/theos
-cd ~/apps/EscapeOS
+cd ~/apps/YumiStorage
 make package FINALPACKAGE=1
-# staged app: .theos/_/Applications/EscapeOS.app
+# staged app: .theos/_/Applications/YumiStorage.app
 ```
 
 After reinstall, place `pairingFile.plist` again from the PC: iPASide Settings → Pairing file → Place (House Arrest), or share the file in Files.

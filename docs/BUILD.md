@@ -1,4 +1,4 @@
-# Building EscapeOS
+# Building YumiStorage
 
 ## iOS 26 Liquid Glass tab bar
 
@@ -23,13 +23,13 @@ The shipping UI is SwiftUI `TabView` in `RootView`. Linking against the iOS 26 S
 
 ```bash
 export THEOS=~/theos
-cd ~/apps/EscapeOS
+cd ~/apps/YumiStorage
 make clean package
 ```
 
 The Makefile pins `iphone:clang:16.5:18.0` because newer Apple SDKs require Xcode’s Apple Clang and fail under Linux clang.
 
-`EscapeOS/Tunnel/libidevice_ffi.a` is not in git (≈93 MB). Download it from the same GitHub Release as the IPA, or rebuild `jkcoxson/idevice` for `aarch64-apple-ios`, and place it at `EscapeOS/Tunnel/libidevice_ffi.a` before `make package`.
+`YumiStorage/Tunnel/libidevice_ffi.a` is not in git (≈93 MB). Download it from the same GitHub Release as the IPA, or rebuild `jkcoxson/idevice` for `aarch64-apple-ios`, and place it at `YumiStorage/Tunnel/libidevice_ffi.a` before `make package`.
 
 After install, place `pairingFile.plist` again from the PC: iPASide Settings → Pairing file → Place (House Arrest), or share the file in Files.
 
@@ -41,4 +41,4 @@ Regenerate PNGs from the master artwork:
 python3 tools/generate_icons.py
 ```
 
-Master icon: `assets/EscapeOS-icon-master.png` (teal escape/sandbox motif, transparent corners).
+Master icon: `assets/YumiStorage-icon-master.png` (teal escape/sandbox motif, transparent corners).

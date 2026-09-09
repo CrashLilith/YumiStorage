@@ -1,0 +1,124 @@
+import Foundation
+
+/// Errors that can occur while consuming or releasing a sandbox extension
+/// for a container path via the bad_query primitive.
+enum SandboxEscapeError: Error, LocalizedError {
+    case notAbsolutePath
+    case targetMissing
+    case resolveFailed
+    case queryCreateFailed
+    case outsideSandbox
+    case kernelRejected
+    case asprintfFailed
+    case unknown(code: Int64)
+    case invalidHandle
+
+    var errorDescription: String? {
+        switch self {
+        case .notAbsolutePath:
+            return "The provided path is not an absolute path."
+        case .targetMissing:
+            return "The target path does not exist on this device."
+        case .resolveFailed:
+            return "Failed to resolve containermanager symbols."
+        case .queryCreateFailed:
+            return "Failed to create the container query."
+        case .outsideSandbox:
+            return "The path lies outside containermanager's sandbox."
+        case .kernelRejected:
+            return "The kernel refused to issue a sandbox extension."
+        case .asprintfFailed:
+            return "Failed to build the query part string."
+        case .unknown(let code):
+            return "Unknown sandbox error (code \(code))."
+        case .invalidHandle:
+            return "Attempted to use an invalid sandbox handle."
+        }
+    }
+}
+
+/// Thin, type-safe wrapper around the `bad_query` C primitive. All access to
+/// another app's container must go through this type so that handles are
+/// tracked and released deterministically.
+final class SandboxEscape {
+
+    /// An opaque, positive handle representing a live sandbox extension.
+    struct Handle: Hashable {
+        let raw: Int64
+    }
+
+    private var liveHandles: Set<Int64> = []
+    private let lock = NSLock()
+
+    /// Consume a sandbox extension for `path`.
+    /// - Parameters:
+    ///   - path: Absolute path inside another app's container.
+    ///   - groupIdentifier: Optional app-group identifier (iOS 26 App Group route).
+    ///   - isGroup: Whether the target is an App Group container.
+    /// - Returns: A `Handle` that must later be passed to `release(_:)`.
+    /// - Throws: `SandboxEscapeError` on failure.
+    func consume(path: String, groupIdentifier: String? = nil, isGroup: Bool = false) throws -> Handle {
+        var cPath = Array(path.utf8CString)
+        var cGroup = groupIdentifier.map { Array($0.utf8CString) }
+
+        let raw: Int64 = cPath.withUnsafeMutableBufferPointer { pathPtr in
+            if cGroup != nil {
+                return cGroup!.withUnsafeMutableBufferPointer { groupPtr in
+                    bad_query(pathPtr.baseAddress, false, groupPtr.baseAddress, isGroup)
+                }
+            }
+            return bad_query(pathPtr.baseAddress, false, nil, isGroup)
+        }
+
+        guard raw >= 0 else {
+            throw Self.error(from: raw)
+        }
+
+        lock.lock()
+        liveHandles.insert(raw)
+        lock.unlock()
+        return Handle(raw: raw)
+    }
+
+    /// Release a previously consumed handle. Safe to call multiple times.
+    func release(_ handle: Handle) {
+        lock.lock()
+        let removed = liveHandles.remove(handle.raw)
+        lock.unlock()
+        guard removed != nil else { return }
+        bad_query_release(handle.raw)
+    }
+
+    /// Number of currently live (consumed, not yet released) handles.
+    var liveHandleCount: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return liveHandles.count
+    }
+
+    /// Convenience scoped accessor: consumes a handle, runs `body`, always releases.
+    @discardableResult
+    func withHandle<T>(
+        for path: String,
+        groupIdentifier: String? = nil,
+        isGroup: Bool = false,
+        _ body: (Handle) throws -> T
+    ) throws -> T {
+        let handle = try consume(path: path, groupIdentifier: groupIdentifier, isGroup: isGroup)
+        defer { release(handle) }
+        return try body(handle)
+    }
+
+    private static func error(from code: Int64) -> SandboxEscapeError {
+        switch code {
+        case -255: return .notAbsolutePath
+        case -254: return .targetMissing
+        case -1:   return .resolveFailed
+        case -2:   return .queryCreateFailed
+        case -3:   return .outsideSandbox
+        case -4:   return .kernelRejected
+        case -5:   return .asprintfFailed
+        default:   return .unknown(code: code)
+        }
+    }
+}

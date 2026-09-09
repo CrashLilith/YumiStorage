@@ -7,7 +7,7 @@ pairingFile.plist
 idevice_log.txt
 _scratch/
 Payload/
-EscapeOS/Tunnel/libidevice_ffi.a
+YumiStorage/Tunnel/libidevice_ffi.a
 
 # Vendored upstream: keep Sources + LICENSE, not their test/CI trees
 vendor/**/Tests/
