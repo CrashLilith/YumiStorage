@@ -32,6 +32,7 @@ YumiStorage_FILES = \
 	YumiStorage/Engine/FileClipboard.swift \
 	YumiStorage/Engine/FileService.swift \
 	YumiStorage/Engine/AppDiscovery.swift \
+	YumiStorage/Engine/LocalDevVPNStatus.swift \
 	YumiStorage/Engine/BackupService.swift \
 	YumiStorage/Engine/ZipWriter.swift \
 	YumiStorage/Engine/ZipPassword.swift \
@@ -58,3 +59,4 @@ YumiStorage_LDFLAGS = -LYumiStorage/Tunnel -lidevice_ffi -lresolv -framework Sec
 YumiStorage_CODESIGN_FLAGS = -SYumiStorage.entitlements
 
 include $(THEOS_MAKE_PATH)/application.mk
+
