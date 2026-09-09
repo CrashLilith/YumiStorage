@@ -1,0 +1,25 @@
+name: Build YumiStorage
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project YumiStorage.xcodeproj \
+            -scheme YumiStorage \
+            -configuration Release \
+            build
