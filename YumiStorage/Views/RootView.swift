@@ -126,6 +126,9 @@ struct PairingSetupView: View {
                     .font(.title2).bold()
                     .frame(maxWidth: .infinity)
 
+                LocalDevVPNCard()
+                    .padding(.horizontal)
+
                 VStack(alignment: .leading, spacing: 14) {
                     SetupStep(number: 1, title: "Install LocalDevVPN",
                                text: "Install LocalDevVPN from the App Store. Leave Device IP / Tunnel IP on the defaults (10.7.0.1) and connect it, with Wi-Fi on.")
@@ -329,3 +332,4 @@ struct SettingsForm: View {
         return "YumiStorage \(short) (\(build))"
     }
 }
+
