@@ -35,6 +35,24 @@ jobs:
           make clean
           make package TARGET=iphone:clang:latest:18.0
 
+      - name: Convert Theos package to IPA
+        run: |
+          set -euo pipefail
+          deb="$(find packages -maxdepth 1 -type f -name '*.deb' -print -quit)"
+          test -n "$deb"
+          work="$(mktemp -d)"
+          ar -x "$deb" --output "$work"
+          data_archive="$(find "$work" -maxdepth 1 -type f -name 'data.tar.*' -print -quit)"
+          test -n "$data_archive"
+          mkdir -p "$work/root"
+          tar -xf "$data_archive" -C "$work/root"
+          app="$(find "$work/root" -type d -path '*/Applications/YumiStorage.app' -print -quit)"
+          test -n "$app"
+          mkdir -p "$work/Payload"
+          cp -R "$app" "$work/Payload/YumiStorage.app"
+          (cd "$work" && /usr/bin/zip -qry "$GITHUB_WORKSPACE/packages/YumiStorage.ipa" Payload)
+          test -s "$GITHUB_WORKSPACE/packages/YumiStorage.ipa"
+
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
