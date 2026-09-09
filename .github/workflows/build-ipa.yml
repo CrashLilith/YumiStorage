@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    # macOS is required for Apple's arm64 iOS toolchain and codesign tools.
+    # macOS 26 includes Xcode 26 and the iOS 26 SDK used by Liquid Glass.
     runs-on: macos-26
 
     steps:
@@ -21,17 +21,12 @@ jobs:
           cache: true
 
       - name: Restore libidevice FFI library
-        env:
-          LIBIDEVICE_FFI_URL: ${{ secrets.LIBIDEVICE_FFI_URL }}
         run: |
           set -euo pipefail
-          if [ -z "${LIBIDEVICE_FFI_URL:-}" ]; then
-            echo "Missing repository secret LIBIDEVICE_FFI_URL."
-            echo "It must point to a trusted copy of YumiStorage/Tunnel/libidevice_ffi.a."
-            exit 1
-          fi
-          curl --fail --location --retry 3 "$LIBIDEVICE_FFI_URL" \
+          curl --fail --location --retry 3 \
+            https://github.com/pwnapplehat/EscapeOS/releases/download/v0.1.5/libidevice_ffi.a \
             --output YumiStorage/Tunnel/libidevice_ffi.a
+          echo "6524066d54ef23e00d46445c04dfc694e180196d54119d718f68434fa225be35  YumiStorage/Tunnel/libidevice_ffi.a" | shasum -a 256 -c -
           test "$(stat -f '%z' YumiStorage/Tunnel/libidevice_ffi.a)" -gt 1000000
 
       - name: Build IPA
